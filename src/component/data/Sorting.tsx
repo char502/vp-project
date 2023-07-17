@@ -25,7 +25,7 @@ export const Sorting = ({
               method: 'POST',
               body: JSON.stringify({
                 query: 'toilets',
-                sort: 2,
+                sort: 1,
               }),
               headers: {
                 'Content-type': 'application/json; charset=UTF-8',

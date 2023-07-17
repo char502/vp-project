@@ -46,12 +46,9 @@ interface ProductData {
 
 export default function App() {
   const productInfo = examplePayload.item.products;
-  const [productsObj, setProductsObj] = useState<ProductData>(productInfo);
-  const [filtered, setFiltered] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -64,6 +61,9 @@ export default function App() {
             method: 'POST',
             body: JSON.stringify({
               query: 'toilets',
+              pageNumber: 0,
+              size: 10,
+              additionalPages: 2,
               sort: 1,
             }),
             headers: {
@@ -86,28 +86,43 @@ export default function App() {
     getData();
   }, []);
 
-  useEffect(() => {
-    if (filtered.length > 0) {
-      setProductsObj(
-        examplePayload.item.products.filter((product) =>
-          //@ts-ignore
-          filtered.includes(product.brand.name)
-        )
-      );
-    } else {
-      setProductsObj(productInfo);
-    }
-  }, [filtered, productInfo]);
+  console.log(data);
 
-  const handleCheckboxSelect = (e) => {
-    const { value, checked } = e.target;
-    if (checked) {
-      //Add checked item into checkList
-      setFiltered([...filtered, value]);
-    } else {
-      //Remove unchecked item from checkList
-      setFiltered(filtered.filter((br) => br !== value));
-    }
+  const handleNextPageClick = () => {
+    console.log('handleNextPageClick clicked');
+
+    const getNextPage = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://spanishinquisition.victorianplumbing.co.uk/interviews/listings?apikey=yj2bV48J40KsBpIMLvrZZ1j1KwxN4u3A83H8IBvI`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              query: 'toilets',
+              pageNumber: 1,
+              size: 10,
+              additionalPages: 1,
+              sort: 1,
+            }),
+            headers: {
+              'Content-type': 'application/json; charset=UTF-8',
+            },
+          }
+        );
+
+        if (!res.ok)
+          throw new Error('Something went wrong with fetching products');
+        const data = await res.json();
+        setData(data.products);
+      } catch (err: any | unknown) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+      getNextPage();
+    };
   };
 
   // ============ Data for filters ==============
@@ -116,39 +131,25 @@ export default function App() {
     .sort();
   const brandArrayNoDups: string[] = [...new Set(brandArray)];
 
-  const count: {} = brandArray.reduce(function (acc, curr) {
-    return acc[curr] ? ++acc[curr] : (acc[curr] = 1), acc;
-  }, {});
-
   return (
-    <div className="container grid grid-cols-[max-content_1fr] gap-x-4 bg-[#F2F0EB] mx-auto">
+    <div className="container grid grid-cols-[max-content_1fr] gap-x-4 bg-[#F2F0EB] mx-auto mb-6">
       <div className="p-4">
         <div className="grid w-full grid-cols-1 flex-row justify-center">
           <div className="flex items-center">
-            <h2 className="text-2xl font-bold">Filter By</h2>
+            <h2 className="text-2xl font-bold">Brands</h2>
           </div>
           <div className="flex-1">
             <ul className="pt-2 pb-4 space-y-1 text-sm">
               <div className="bg-white">
                 <li key="1">
-                  <h1 className="text-2xl p-4">Brand</h1>
+                  <h1 className="text-2xl p-4">Available Brands</h1>
                   <hr />
                   {brandArrayNoDups.map((item, index) => {
-                    const brandCount = count[item];
                     return (
                       <ul>
                         <li key={index} className="px-4 py-2">
                           <h2>
-                            <input
-                              key={index}
-                              type="checkbox"
-                              name={item}
-                              value={item}
-                              onClick={handleCheckboxSelect}
-                            />
-                            <label className="text-xl pl-2">
-                              {item} ({brandCount})
-                            </label>
+                            <label className="text-xl pl-2">{item}</label>
                           </h2>
                         </li>
                       </ul>
@@ -195,6 +196,14 @@ export default function App() {
               );
             })}
           {error && <ErrorMessage message={error} />}
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <button
+            className="bg-slate-500 text-white  px-6 py-4"
+            onClick={handleNextPageClick}
+          >
+            Load More
+          </button>
         </div>
       </div>
     </div>
