@@ -1,11 +1,90 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 import examplePayload from './component/data/example-payload.json';
 import { ProductCardLayout } from './component/ProductCardLayout';
+import { Loader } from './component/Loader';
+import { ErrorMessage } from './component/data/ErrorMessage';
+import { Sorting } from './component/data/Sorting';
+
+interface Attributes {
+  isBestSeller: boolean;
+}
+
+interface Price {
+  priceIncTax: number;
+}
+
+interface Image {
+  url: string;
+  attributes: {
+    imageAltText: string;
+  };
+}
+
+interface Brand {
+  brandImage: {
+    attributes: {
+      imageAltText: string;
+    };
+    url: string;
+  };
+}
+
+interface ProductData {
+  id: string;
+  brand: Brand;
+  productName: string;
+  image: Image;
+  altText: string;
+  price: Price;
+  stockStatus?: string;
+  averageRating: number;
+  reviewsCount: number;
+  attributes: Attributes;
+  brandImage: string;
+}
 
 export default function App() {
   const productInfo = examplePayload.item.products;
-  const [productsObj, setProductsObj] = useState(productInfo);
-  const [filtered, setFiltered] = useState([]);
+  const [productsObj, setProductsObj] = useState<ProductData>(productInfo);
+  const [filtered, setFiltered] = useState<string[]>([]);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://spanishinquisition.victorianplumbing.co.uk/interviews/listings?apikey=yj2bV48J40KsBpIMLvrZZ1j1KwxN4u3A83H8IBvI`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              query: 'toilets',
+              sort: 1,
+            }),
+            headers: {
+              'Content-type': 'application/json; charset=UTF-8',
+            },
+          }
+        );
+
+        if (!res.ok)
+          throw new Error('Something went wrong with fetching products');
+        const data = await res.json();
+        setData(data.products);
+      } catch (err: any | unknown) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getData();
+  }, []);
 
   useEffect(() => {
     if (filtered.length > 0) {
@@ -20,30 +99,10 @@ export default function App() {
     }
   }, [filtered, productInfo]);
 
-  // @ts-ignore
-  const onSelectChange = (e) => {
-    const sortDirection = e.target.value;
-
-    // 2 is low to high
-    if (sortDirection === '2') {
-      const sortedLowToHigh = [...productsObj].sort(
-        (a, b) => a.price.priceIncTax - b.price.priceIncTax
-      );
-      setProductsObj(sortedLowToHigh);
-    } else if (sortDirection === '3') {
-      const sortedHighToLow = [...productsObj].sort(
-        (a, b) => b.price.priceIncTax - a.price.priceIncTax
-      );
-      setProductsObj(sortedHighToLow);
-    }
-  };
-
-  //@ts-ignore
   const handleCheckboxSelect = (e) => {
     const { value, checked } = e.target;
     if (checked) {
       //Add checked item into checkList
-      //@ts-ignore
       setFiltered([...filtered, value]);
     } else {
       //Remove unchecked item from checkList
@@ -57,10 +116,7 @@ export default function App() {
     .sort();
   const brandArrayNoDups: string[] = [...new Set(brandArray)];
 
-  // console.log(brandArr);
-
   const count: {} = brandArray.reduce(function (acc, curr) {
-    // @ts-ignore
     return acc[curr] ? ++acc[curr] : (acc[curr] = 1), acc;
   }, {});
 
@@ -78,7 +134,6 @@ export default function App() {
                   <h1 className="text-2xl p-4">Brand</h1>
                   <hr />
                   {brandArrayNoDups.map((item, index) => {
-                    // @ts-ignore
                     const brandCount = count[item];
                     return (
                       <ul>
@@ -107,42 +162,39 @@ export default function App() {
       </div>
 
       <div>
-        <div className=" bg-white border-gray-400 mt-6 w-56">
-          <p className="text-slate-400 text-xs px-1">Sort By</p>
-          <select
-            className="w-full h-8"
-            defaultValue={0}
-            onChange={onSelectChange}
-          >
-            <option value={1}>Recommended</option>
-            <option value={2}>Lowest Price</option>
-            <option value={3}>Highest Price</option>
-            {/* <option value={4}>Highest Discount</option> */}
-          </select>
-        </div>
+        <Sorting
+          onchange={onchange}
+          setIsLoading={setIsLoading}
+          setData={setData}
+          setError={setError}
+        />
 
         <div className="grid w-full xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 flex-row justify-center gap-3">
-          {productsObj.map((product) => {
-            return (
-              <div key={product.id} className="rounded-lg p-3 w-full">
-                <ProductCardLayout
-                  id={product.id}
-                  productName={product.productName}
-                  prodImage={product?.image?.url}
-                  altText={product?.image?.attributes?.imageAltText}
-                  brandImage={product?.brand?.brandImage.url}
-                  brandImgAltText={
-                    product?.brand?.brandImage?.attributes?.imageAltText
-                  }
-                  price={product.price.priceIncTax}
-                  stockStatus={product.stockStatus.status}
-                  averageRating={product.averageRating}
-                  reviewsCount={product.reviewsCount}
-                  isBestSeller={product?.attributes.isBestSeller}
-                />
-              </div>
-            );
-          })}
+          {isLoading && <Loader />}
+          {!isLoading &&
+            !error &&
+            data.map((product) => {
+              return (
+                <div key={product.id} className="rounded-lg p-3 w-full">
+                  <ProductCardLayout
+                    id={product.id}
+                    productName={product.productName}
+                    prodImage={product?.image?.url}
+                    altText={product?.image?.attributes?.imageAltText}
+                    brandImage={product?.brand?.brandImage.url}
+                    brandImgAltText={
+                      product?.brand?.brandImage?.attributes?.imageAltText
+                    }
+                    price={product.price.priceIncTax}
+                    stockStatus={product.stockStatus.status}
+                    averageRating={product.averageRating}
+                    reviewsCount={product.reviewsCount}
+                    isBestSeller={product?.attributes.isBestSeller}
+                  />
+                </div>
+              );
+            })}
+          {error && <ErrorMessage message={error} />}
         </div>
       </div>
     </div>
