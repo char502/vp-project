@@ -5,13 +5,12 @@ import { ProductCardLayout } from './component/ProductCardLayout';
 export default function App() {
   const productInfo = examplePayload.item.products;
   const [productsObj, setProductsObj] = useState(productInfo);
-  const [filtered, setFiltered] = useState([]);
+  const [filtered, setFiltered] = useState<string[]>([]);
 
   useEffect(() => {
     if (filtered.length > 0) {
       setProductsObj(
         examplePayload.item.products.filter((product) =>
-          //@ts-ignore
           filtered.includes(product.brand.name)
         )
       );
@@ -20,8 +19,7 @@ export default function App() {
     }
   }, [filtered, productInfo]);
 
-  // @ts-ignore
-  const onSelectChange = (e) => {
+  const onSelectChange = (e: { target: { value: string } }) => {
     const sortDirection = e.target.value;
 
     // 2 is low to high
@@ -38,12 +36,12 @@ export default function App() {
     }
   };
 
-  //@ts-ignore
-  const handleCheckboxSelect = (e) => {
+  const handleCheckboxSelect = (e: {
+    target: { value: string; checked: boolean };
+  }) => {
     const { value, checked } = e.target;
     if (checked) {
       //Add checked item into checkList
-      //@ts-ignore
       setFiltered([...filtered, value]);
     } else {
       //Remove unchecked item from checkList
@@ -56,11 +54,13 @@ export default function App() {
     .map((product) => product.brand.name)
     .sort();
   const brandArrayNoDups: string[] = [...new Set(brandArray)];
+  // ============ Data for filters ==============
 
-  // console.log(brandArr);
-
-  const count: {} = brandArray.reduce(function (acc, curr) {
-    // @ts-ignore
+  const count: Record<string, number> = brandArray.reduce(function (
+    acc: Record<string, number>,
+    curr: string
+  ) {
+    // eslint-disable-next-line no-sequences
     return acc[curr] ? ++acc[curr] : (acc[curr] = 1), acc;
   }, {});
 
@@ -78,7 +78,6 @@ export default function App() {
                   <h1 className="text-2xl p-4">Brand</h1>
                   <hr />
                   {brandArrayNoDups.map((item, index) => {
-                    // @ts-ignore
                     const brandCount = count[item];
                     return (
                       <ul>
@@ -89,7 +88,7 @@ export default function App() {
                               type="checkbox"
                               name={item}
                               value={item}
-                              onClick={handleCheckboxSelect}
+                              onChange={handleCheckboxSelect}
                             />
                             <label className="text-xl pl-2">
                               {item} ({brandCount})
