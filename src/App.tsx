@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'react';
 import examplePayload from './component/data/example-payload.json';
 import { ProductCardLayout } from './component/ProductCardLayout';
+import { ProductData } from './model/ProductDataTypes';
 
 export default function App() {
-  const productInfo = examplePayload.item.products;
-  const [productsObj, setProductsObj] = useState(productInfo);
+  const productInfo: ProductData[] = examplePayload.item.products;
+  const [productsObj, setProductsObj] = useState<ProductData[]>(productInfo);
   const [filtered, setFiltered] = useState<string[]>([]);
 
   useEffect(() => {
     if (filtered.length > 0) {
       setProductsObj(
-        examplePayload.item.products.filter((product) =>
-          filtered.includes(product.brand.name)
-        )
+        productInfo.filter((product) => filtered.includes(product.brand.name))
       );
     } else {
       setProductsObj(productInfo);
@@ -22,7 +21,6 @@ export default function App() {
   const onSelectChange = (e: { target: { value: string } }) => {
     const sortDirection = e.target.value;
 
-    // 2 is low to high
     if (sortDirection === '2') {
       const sortedLowToHigh = [...productsObj].sort(
         (a, b) => a.price.priceIncTax - b.price.priceIncTax
@@ -116,7 +114,6 @@ export default function App() {
             <option value={1}>Recommended</option>
             <option value={2}>Lowest Price</option>
             <option value={3}>Highest Price</option>
-            {/* <option value={4}>Highest Discount</option> */}
           </select>
         </div>
 
