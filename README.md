@@ -1,46 +1,42 @@
-# Getting Started with Create React App
+# VP-Project (made with create-react-app)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- App runs in react
+- Use 'git pull' to pull the repo down locally
+- Use `npm start` to run the app
 
-## Available Scripts
+## Technologies used
 
-In the project directory, you can run:
+- Create-react-app
+- TypeScript
+- Tailwind CSS for styling
+- FontAwesome (for star rating component)
 
-### `npm start`
+## What was Done
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Working with the static data
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- Initially unable to get the data via api call
+- So focused on creating the cards and the responsive layout with static data (example-payload.json) so as not to lose time
+- Created a reusable card layout (including TypeScript types) and mapped through to display the grid
+- Implemented some features shown in the card example (i.e. created a star rating component and conditionally rendered the bestseller banner)
 
-### `npm test`
+- implemented the Sort By feature on the static data, starting with 'initial list' then enabling the option to sort by 'lowest price first' or 'highest price first'
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Implemented a Filter feature in the sidebar - clicking on the checkboxes filters by brand (numerous brands can be selected at once)
 
-### `npm run build`
+### Finally figured out how to make the api call (Shown in a [separate branch off the main branch](https://github.com/char502/vp-project/tree/started-example-with-fetched-data))
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Finally realised how to implement the POST request to get the data (a request body as a second argument to the fetch request after the URL)
+- Implemented this in a separate branch (off the main branch above), which can be found [here](https://github.com/char502/vp-project/tree/started-example-with-fetched-data)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Did not have much time left so just had a go at implementing a couple of features
+- Added Error handling in the fetch request (covered it in a course recently and wanted the practice)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Able to implement sorting by 'Recommended', 'Price Low to High', 'Price High to Low' and 'Largest Discount' using api calls
+- Implemented Pagination using api calls but it's not quite right (explained in App.tsx):
 
-### `npm run eject`
+## What more could be done with more time
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Fixed Pagination in the fetched data branch version
+- Moved all sorting, filtering and Pagination logic to their own components
+- Investigated the response returned from the api to fix the pagination bug and add filtering functionality to the app via api calls

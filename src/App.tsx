@@ -111,9 +111,9 @@ export default function App() {
             defaultValue={0}
             onChange={onSelectChange}
           >
-            <option value={1}>Recommended</option>
-            <option value={2}>Lowest Price</option>
-            <option value={3}>Highest Price</option>
+            <option value={0}>Initial List</option>
+            <option value={2}>Lowest Price First</option>
+            <option value={3}>Highest Price First</option>
           </select>
         </div>
 
