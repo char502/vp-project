@@ -40,7 +40,7 @@ export default function App() {
           throw new Error('Something went wrong with fetching products');
         const data = await res.json();
         setData(data.products);
-      } catch (err: any | unknown) {
+      } catch (err: any | string) {
         console.error(err.message);
         setError(err.message);
       } finally {
@@ -50,11 +50,12 @@ export default function App() {
     getData();
   }, []);
 
-  console.log(count);
+  // Pagination not quite right,
+  // Works on first click (loads current items then next 5 items)
+  // Doesn't work on next two clicks (keeps loading the same 10 items with no additions)
+  // Then works fine (loading 5 additional items - in addition to currently displayed items)
 
-  const handleNextPageClick = async (e: any) => {
-    // console.log(e);
-
+  const handleNextPageClick = async () => {
     setCount((prevCount) => prevCount + 1);
 
     try {
@@ -78,9 +79,23 @@ export default function App() {
 
       if (!res.ok)
         throw new Error('Something went wrong with fetching products');
-      const data = await res.json();
-      setData(data.products);
-    } catch (err: any | unknown) {
+
+      const pagData = await res.json();
+      const final: ProductData[] = pagData.products;
+
+      // combine current state and new value
+      let comb = [...data, ...final];
+
+      // remove duplicates
+      let newOb: Record<string, boolean> = {};
+
+      const unique = comb.filter(
+        (obj) => !newOb[obj.id] && (newOb[obj.id] = true)
+      );
+
+      // set new page to state
+      setData(unique);
+    } catch (err: any | string) {
       console.error(err.message);
       setError(err.message);
     } finally {
@@ -148,7 +163,7 @@ export default function App() {
                       product?.brand?.brandImage?.attributes?.imageAltText
                     }
                     price={product.price.priceIncTax}
-                    // stockStatus={product.stockStatus.status}
+                    stockStatus={product.stockStatus.status}
                     averageRating={product.averageRating}
                     reviewsCount={product.reviewsCount}
                     isBestSeller={product?.attributes.isBestSeller}

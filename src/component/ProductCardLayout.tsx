@@ -6,7 +6,7 @@ interface ProductCardProps {
   prodImage: string;
   altText: string;
   price: number;
-  stockStatus?: string;
+  stockStatus: string;
   averageRating: number | null;
   reviewsCount: number;
   isBestSeller: boolean;
